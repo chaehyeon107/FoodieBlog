@@ -1,0 +1,53 @@
+server:
+  port: 3000
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validation
+    open-in-view: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true   # ✅ 기존 DB가 이미 있어도 Flyway가 "기준점" 잡고 시작
+    baseline-version: 0
+    locations: classpath:db/migration
+
+app:
+  version: ${APP_VERSION:0.0.1}
+
+  jwt:
+    secret: ${JWT_SECRET}
+    access-expiry-ms: ${JWT_ACCESS_EXPIRY_MS:3600000}
+    refresh-expiry-ms: ${JWT_REFRESH_EXPIRY_MS:1209600000}
+
+seed:
+  admin:
+    email: "admin@example.com"
+    password: "admin1234"
+    nickname: "관리자"
+  user:
+    email: "user@example.com"
+    password: "user1234"
+    nickname: "방문객"
+
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
+    org.flywaydb: DEBUG
+    org.springframework.boot.autoconfigure.flyway: DEBUG
+
+
+ratelimit:
+  max-requests: ${RATE_LIMIT_MAX:30}
+  window-seconds: ${RATE_LIMIT_WINDOW_SECONDS:60}
+
+request:
+  max-body-bytes: ${MAX_BODY_BYTES:1048576} # 1MB
+
