@@ -10,10 +10,10 @@ import com.foodieblog.post.dto.PostUpdateRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.jpa.domain.Specification;
-import static org.springframework.data.jpa.domain.Specification.where;
+
 import java.time.LocalDate;
 
 @Service
@@ -62,12 +62,6 @@ public class PostService {
         Category category = categoryRepository.findById(req.getCategoryId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
 
-        // ✅ 현재 정책: ADMIN이면 누구 글이든 수정 가능 → author 체크 생략 가능
-        // 만약 "관리자도 본인 글만" 정책이면 아래 주석 해제 + ErrorCode 추가 필요
-        // if (!post.getAuthorId().equals(actorUserId)) {
-        //     throw new BusinessException(ErrorCode.POST_FORBIDDEN);
-        // }
-
         post.update(
                 req.getTitle(),
                 req.getContent(),
@@ -84,12 +78,6 @@ public class PostService {
     public void delete(Long actorUserId, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
-
-        // ✅ 현재 정책: ADMIN이면 누구 글이든 삭제 가능 → author 체크 생략 가능
-        // if (!post.getAuthorId().equals(actorUserId)) {
-        //     throw new BusinessException(ErrorCode.POST_FORBIDDEN);
-        // }
-
         postRepository.delete(post);
     }
 
@@ -100,10 +88,6 @@ public class PostService {
 
     @Transactional(readOnly = true)
     public Page<PostResponse> byCategory(Long categoryId, Pageable pageable) {
-        // 카테고리 존재 검증을 꼭 하고 싶으면 아래 주석 해제(선택)
-        // categoryRepository.findById(categoryId)
-        //        .orElseThrow(() -> new BusinessException(ErrorCode.CATEGORY_NOT_FOUND));
-
         return postRepository.findAllByCategory_Id(categoryId, pageable).map(PostResponse::from);
     }
 
@@ -116,8 +100,6 @@ public class PostService {
     public void publish(Long actorUserId, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
-
-        // ✅ 현재 정책: ADMIN이면 누구 글이든 발행 가능 → author 체크 생략 가능
         post.publish();
     }
 
@@ -125,25 +107,41 @@ public class PostService {
     public void unpublish(Long actorUserId, Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.POST_NOT_FOUND));
-
         post.unpublish();
     }
+
+    /**
+     * ✅ 필터 검색(list) - Specification null 문제 해결 버전
+     */
     @Transactional(readOnly = true)
     public Page<PostResponse> list(
             String keyword,
             Long categoryId,
             PostStatus status,
-            java.time.LocalDate dateFrom,
-            java.time.LocalDate dateTo,
+            LocalDate dateFrom,
+            LocalDate dateTo,
             Pageable pageable
     ) {
-        var spec = org.springframework.data.jpa.domain.Specification.where(PostSpecifications.keyword(keyword))
-                .and(PostSpecifications.categoryId(categoryId))
-                .and(PostSpecifications.status(status))
-                .and(PostSpecifications.visitedFrom(dateFrom))
-                .and(PostSpecifications.visitedTo(dateTo));
+        // ✅ 항상 true인 spec으로 시작 (null 방지)
+        Specification<Post> spec = alwaysTrue();
+
+        // ✅ 각 스펙이 null일 수 있으니 safeSpec으로 감싸서 and
+        spec = spec.and(safeSpec(PostSpecifications.keyword(keyword)));
+        spec = spec.and(safeSpec(PostSpecifications.categoryId(categoryId)));
+        spec = spec.and(safeSpec(PostSpecifications.status(status)));
+        spec = spec.and(safeSpec(PostSpecifications.visitedFrom(dateFrom)));
+        spec = spec.and(safeSpec(PostSpecifications.visitedTo(dateTo)));
 
         return postRepository.findAll(spec, pageable).map(PostResponse::from);
     }
 
+    /** null이면 (1=1) 스펙으로 대체 */
+    private Specification<Post> safeSpec(Specification<Post> s) {
+        return (s == null) ? alwaysTrue() : s;
+    }
+
+    /** 항상 true (where절 1=1) */
+    private Specification<Post> alwaysTrue() {
+        return (root, query, cb) -> cb.conjunction();
+    }
 }

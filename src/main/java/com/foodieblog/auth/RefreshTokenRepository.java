@@ -1,12 +1,17 @@
 package com.foodieblog.auth;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long> {
 
     Optional<RefreshToken> findByToken(String token);
-    void deleteByUser_UserId(Long userId);
 
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query("delete from RefreshToken rt where rt.user.userId = :userId")
+    int deleteByUserId(@Param("userId") Long userId);
 }

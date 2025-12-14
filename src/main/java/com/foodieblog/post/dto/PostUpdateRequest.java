@@ -6,8 +6,12 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class PostUpdateRequest {
 
     @NotBlank

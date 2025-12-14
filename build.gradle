@@ -1,13 +1,16 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '4.0.0'
+	id 'org.springframework.boot' version '3.3.6'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.asciidoctor.jvm.convert' version '4.0.5'
 }
 
 group = 'com.foodieblog'
 version = '0.0.1-SNAPSHOT'
-description = 'Demo project for Spring Boot'
+
+springBoot {
+	mainClass = 'com.foodieblog.FoodieblogApplication'
+}
 
 java {
 	toolchain {
@@ -15,54 +18,52 @@ java {
 	}
 }
 
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-}
-
-repositories {
-	mavenCentral()
-}
+repositories { mavenCentral() }
 
 ext {
 	set('snippetsDir', file("build/generated-snippets"))
 }
 
 dependencies {
+	// Swagger (Spring Boot 3 호환)
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
+
+	// Web / Validation / Security / JPA
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'com.fasterxml.jackson.core:jackson-databind'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	implementation 'org.flywaydb:flyway-mysql'
-	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// DB
 	runtimeOnly 'com.mysql:mysql-connector-j'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-restdocs'
-	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
-	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
-	testImplementation 'com.h2database:h2'
-	testCompileOnly 'org.projectlombok:lombok'
-	testAnnotationProcessor 'org.projectlombok:lombok'
+
+	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// dotenv
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
+
+	// lombok
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// test
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+	testImplementation 'com.h2database:h2'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 }
 
-tasks.named('test') {
+tasks.withType(Test).configureEach {
 	outputs.dir snippetsDir
 	useJUnitPlatform()
 }
+
 
 tasks.named('asciidoctor') {
 	inputs.dir snippetsDir
@@ -82,7 +83,6 @@ tasks.register("generateBuildTime") {
 	}
 }
 
-// processResources 전에 실행해서 jar에 포함되게 함
 tasks.named("processResources") {
 	dependsOn("generateBuildTime")
 }
