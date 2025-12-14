@@ -43,7 +43,7 @@ public class AuthService {
         );
 
         // 1유저 1토큰 전략
-        refreshTokenRepository.deleteByUser_UserId(user.getUserId());
+        refreshTokenRepository.deleteByUserId(user.getUserId());
 
         String refreshTokenValue = jwtProvider.generateRefreshToken();
 

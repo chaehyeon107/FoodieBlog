@@ -41,7 +41,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String userId = claims.getSubject();
             String role = (String) claims.get("role");
 
-            var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+            String normalized = role.startsWith("ROLE_") ? role : "ROLE_" + role;
+            var authorities = List.of(new SimpleGrantedAuthority(normalized));
+
             var principal = new AuthPrincipal(
                     Long.parseLong(userId),
                     (String) claims.get("email"),
@@ -54,6 +56,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             chain.doFilter(request, response);
 
+            System.out.println("[FILTER] " + request.getMethod() + " " + request.getRequestURI()
+                    + " auth=" + request.getHeader("Authorization"));
+
+
         } catch (JwtProvider.TokenExpiredException e) {
             SecurityContextHolder.clearContext();
             request.setAttribute(AUTH_ERROR_CODE_ATTR, ErrorCode.TOKEN_EXPIRED);
@@ -65,6 +71,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
         }
     }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.equals("/health")
+                || path.startsWith("/swagger-ui")
+                || path.startsWith("/v3/api-docs");
+    }
+
 
     public record AuthPrincipal(Long userId, String email, String nickname, String role) {}
 }

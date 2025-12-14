@@ -1,5 +1,6 @@
 server:
   port: 8080
+  forward-headers-strategy: framework
 
 spring:
   datasource:
@@ -11,17 +12,13 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
-  flyway:
-    enabled: true
-    baseline-on-migrate: true   # ✅ 기존 DB가 이미 있어도 Flyway가 "기준점" 잡고 시작
-    baseline-version: 0
-    locations: classpath:db/migration
+
 
 app:
   version: ${APP_VERSION:0.0.1}
 
   jwt:
-    secret: "${JWT_SECRET:cJXDOzh0wfVErYnurVH+rIi19qEMdKYSlyH95Se4/C+dQJ9Sn1uA4Tr7FX1CUO5w}"
+    secret: ${JWT_SECRET}
     access-expiry-ms: ${JWT_ACCESS_EXPIRY_MS:3600000}
     refresh-expiry-ms: ${JWT_REFRESH_EXPIRY_MS:1209600000}
 
@@ -38,10 +35,8 @@ seed:
 
 logging:
   level:
-    com.foodieblog: DEBUG
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: debug
-    org.hibernate.orm.jdbc.bind: trace
+    org.hibernate.SQL: info
+    org.hibernate.orm.jdbc.bind: off
 
 
 ratelimit:
@@ -51,7 +46,8 @@ ratelimit:
 request:
   max-body-bytes: ${MAX_BODY_BYTES:1048576} # 1MB
 
+
 jwt:
-  secret: "${JWT_SECRET:cJXDOzh0wfVErYnurVH+rIi19qEMdKYSlyH95Se4/C+dQJ9Sn1uA4Tr7FX1CUO5w}"
+  secret: ${JWT_SECRET}
   access-expiry-ms: ${JWT_ACCESS_EXPIRY_MS:3600000}
   refresh-expiry-ms: ${JWT_REFRESH_EXPIRY_MS:1209600000}
