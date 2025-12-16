@@ -86,6 +86,7 @@ JWT_REFRESH_TOKEN_EXPIRE=1209600
 * **Base URL**: `http://113.198.66.75:10236/api`
 * **Swagger URL**: `http://113.198.66.75:10236/swagger-ui/index.html`
 * **Health URL**: `http://113.198.66.75:10236/health`
+* **Postman URL**: `https://www.postman.com/esther10777-8409077/foodie-blog-api/collection/vl4wmni/foodieblog-api?action=share&creator=50427518&active-environment=50427518-fabeb94d-a571-4ac9-b7b9-55362474e0e2`
 
 ---
 
