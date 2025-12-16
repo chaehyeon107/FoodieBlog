@@ -4,7 +4,8 @@
 		"name": "FoodieBlog API",
 		"description": "Generated from Spring Boot code (FoodieBlog). Includes auth, users, categories, posts, comments, and test scripts (token store + auto refresh).",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "50427518"
+		"_exporter_id": "50427518",
+		"_collection_link": "https://www.postman.com/esther10777-8409077/foodie-blog-api/collection/vl4wmni/foodieblog-api?action=share&source=collection_link&creator=50427518"
 	},
 	"item": [
 		{
